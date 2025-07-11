@@ -23,8 +23,7 @@
     "db:push": "cd packages/database && npm run push",
     "db:migrate": "cd packages/database && npm run migrate",
     "db:seed": "cd packages/database && npm run seed",
-    "db:studio": "cd packages/database && npm run studio",
-    "postinstall": "npm run db:generate"
+    "db:studio": "cd packages/database && npm run studio"
   },
   "devDependencies": {
     "eslint": "^8.53.0",
