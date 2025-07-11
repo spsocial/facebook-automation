@@ -2,6 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@repo/ui', '@repo/database', '@repo/shared'],
+  output: 'standalone',
   images: {
     domains: ['graph.facebook.com', 'scontent.xx.fbcdn.net'],
   },
