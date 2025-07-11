@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id                 String   @id @default(uuid())
+  name               String
+  slug               String   @unique
+  plan               String   @default("starter")
+  status             String   @default("active")
+  trialEndsAt        DateTime?
+  subscriptionEndsAt DateTime?
+  customDomain       String?
+  logoUrl            String?
+  settings           Json     @default("{}")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  members       OrganizationMember[]
+  pages         FacebookPage[]
+  broadcasts    Broadcast[]
+  posts         MonitoredPost[]
+  comments      Comment[]
+  subscriptions Subscription[]
+  usage         UsageTracking[]
+  invoices      Invoice[]
+
+  @@index([status])
+  @@index([plan])
+}
+
+model User {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  name       String?
+  facebookId String?  @unique
+  avatarUrl  String?
+  lastLoginAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  organizations OrganizationMember[]
+  broadcasts    Broadcast[]
+  comments      Comment[]
+  pages         FacebookPage[]
+
+  @@index([email])
+  @@index([facebookId])
+}
+
+model OrganizationMember {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  role           String   @default("member")
+  permissions    String[]
+  joinedAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model FacebookPage {
+  id              String   @id @default(uuid())
+  organizationId  String
+  pageId          String
+  pageName        String
+  pageAccessToken String   @db.Text
+  followersCount  Int      @default(0)
+  isActive        Boolean  @default(true)
+  connectedById   String
+  connectedAt     DateTime @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  connectedBy  User          @relation(fields: [connectedById], references: [id])
+  broadcasts   Broadcast[]
+  posts        MonitoredPost[]
+
+  @@unique([organizationId, pageId])
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+model Broadcast {
+  id                 String    @id @default(uuid())
+  organizationId     String
+  pageId             String
+  createdById        String
+  messageText        String?   @db.Text
+  messageAttachments Json      @default("[]")
+  recipientType      String    @default("all")
+  recipientIds       String[]
+  scheduledAt        DateTime?
+  sentAt             DateTime?
+  status             String    @default("draft")
+  stats              Json      @default("{\"sent\": 0, \"delivered\": 0, \"read\": 0}")
+  createdAt          DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  page         FacebookPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  createdBy    User         @relation(fields: [createdById], references: [id])
+
+  @@index([organizationId, status])
+  @@index([scheduledAt])
+  @@index([status])
+}
+
+model MonitoredPost {
+  id             String   @id @default(uuid())
+  organizationId String
+  pageId         String
+  postId         String
+  postUrl        String?
+  postContent    String?  @db.Text
+  isActive       Boolean  @default(true)
+  commentCount   Int      @default(0)
+  addedById      String?
+  addedAt        DateTime @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  page         FacebookPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  comments     Comment[]
+
+  @@unique([organizationId, postId])
+  @@index([organizationId])
+  @@index([isActive])
+}
+
+model Comment {
+  id              String    @id @default(uuid())
+  organizationId  String
+  postId          String
+  commentId       String    @unique
+  parentCommentId String?
+  commenterId     String?
+  commenterName   String?
+  commentText     String?   @db.Text
+  isForwarded     Boolean   @default(false)
+  forwardedAt     DateTime?
+  isReplied       Boolean   @default(false)
+  replyText       String?   @db.Text
+  repliedAt       DateTime?
+  repliedById     String?
+  createdAt       DateTime  @default(now())
+
+  organization Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  post         MonitoredPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  repliedBy    User?         @relation(fields: [repliedById], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([postId])
+  @@index([isReplied])
+}
+
+model Subscription {
+  id                 String    @id @default(uuid())
+  organizationId     String
+  plan               String
+  status             String    @default("active")
+  amount             Decimal   @db.Decimal(10, 2)
+  currency           String    @default("THB")
+  billingCycle       String    @default("monthly")
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelledAt        DateTime?
+  paymentMethodId    String?
+  stripeCustomerId   String?
+  stripeSubscriptionId String?
+  createdAt          DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model Invoice {
+  id              String   @id @default(uuid())
+  invoiceNumber   String   @unique
+  organizationId  String
+  amount          Decimal  @db.Decimal(10, 2)
+  currency        String   @default("THB")
+  status          String   @default("pending")
+  dueDate         DateTime
+  paidAt          DateTime?
+  paymentMethod   String?
+  items           Json
+  createdAt       DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([status])
+}
+
+model UsageTracking {
+  id               String   @id @default(uuid())
+  organizationId   String
+  month            String
+  broadcastsSent   Int      @default(0)
+  commentsProcessed Int      @default(0)
+  pagesConnected   Int      @default(0)
+  teamMembers      Int      @default(0)
+  updatedAt        DateTime @default(now()) @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, month])
+  @@index([organizationId])
+}

@@ -1,0 +1,35 @@
+{
+  "name": "facebook-broadcast-saas",
+  "version": "1.0.0",
+  "packageManager": "npm@9.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "start:prod": "NODE_ENV=production turbo run start",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "setup": "./scripts/setup.sh",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "db:generate": "cd packages/database && npm run generate",
+    "db:push": "cd packages/database && npm run push",
+    "db:migrate": "cd packages/database && npm run migrate",
+    "db:seed": "cd packages/database && npm run seed",
+    "db:studio": "cd packages/database && npm run studio"
+  },
+  "devDependencies": {
+    "eslint": "^8.53.0",
+    "prettier": "^3.0.3",
+    "turbo": "latest"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
