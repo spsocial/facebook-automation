@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
+    "build:api": "npm run build --workspace=packages/database && npm run build --workspace=packages/shared && npm run build --workspace=apps/api",
     "start": "turbo run start",
     "start:prod": "cd apps/api && npm run start",
     "lint": "turbo run lint",
@@ -22,7 +23,8 @@
     "db:push": "cd packages/database && npm run push",
     "db:migrate": "cd packages/database && npm run migrate",
     "db:seed": "cd packages/database && npm run seed",
-    "db:studio": "cd packages/database && npm run studio"
+    "db:studio": "cd packages/database && npm run studio",
+    "postinstall": "npm run db:generate"
   },
   "devDependencies": {
     "eslint": "^8.53.0",

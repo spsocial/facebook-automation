@@ -2,13 +2,23 @@
 nixPkgs = ["nodejs-18_x", "npm-9_x"]
 
 [phases.install]
-cmds = ["npm install"]
+cmds = [
+  "npm install --workspaces=false",
+  "npm install --workspace=packages/database",
+  "npm install --workspace=packages/shared",
+  "npm install --workspace=apps/api",
+  "cd packages/database && npx prisma generate"
+]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = [
+  "npm run build --workspace=packages/database",
+  "npm run build --workspace=packages/shared",
+  "npm run build --workspace=apps/api"
+]
 
 [start]
-cmd = "npm run start:prod"
+cmd = "cd apps/api && npm run start"
 
 [variables]
 NODE_ENV = "production"
