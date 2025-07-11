@@ -215,11 +215,9 @@ export const analyticsController = {
       const pageStats = await Promise.all(
         pages.map(async (page) => {
           const [broadcastStats, commentStats] = await Promise.all([
-            prisma.broadcast.aggregate({
+            prisma.broadcast.findMany({
               where: { pageId: page.id },
-              _sum: {
-                stats: true,
-              },
+              select: { stats: true },
             }),
             prisma.comment.count({
               where: {
@@ -230,9 +228,18 @@ export const analyticsController = {
             }),
           ]);
 
+          const stats = broadcastStats.reduce((acc, b) => {
+            const s = b.stats as any;
+            return {
+              sent: acc.sent + (s?.sent || 0),
+              delivered: acc.delivered + (s?.delivered || 0),
+              read: acc.read + (s?.read || 0),
+            };
+          }, { sent: 0, delivered: 0, read: 0 });
+          
           return {
             ...page,
-            broadcastStats: broadcastStats._sum.stats || { sent: 0, delivered: 0, read: 0 },
+            broadcastStats: stats,
             totalComments: commentStats,
           };
         })

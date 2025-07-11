@@ -90,7 +90,7 @@ export const initializeQueues = async () => {
       if (broadcast.messageText) {
         message.text = broadcast.messageText;
       }
-      if (broadcast.messageAttachments && broadcast.messageAttachments.length > 0) {
+      if (broadcast.messageAttachments && Array.isArray(broadcast.messageAttachments) && broadcast.messageAttachments.length > 0) {
         const attachment = broadcast.messageAttachments[0] as any;
         message.attachment = {
           type: attachment.type,

@@ -54,7 +54,7 @@ export const commentController = {
   },
 
   // Add post to monitor
-  async addMonitoredPost(req: Request, res: Response, next: NextFunction) {
+  async addMonitoredPost(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const organizationId = req.user?.organizationId;
       const userId = req.user?.user.id;
@@ -108,10 +108,11 @@ export const commentController = {
           },
         });
 
-        return res.json({
+        res.json({
           success: true,
           data: post,
         });
+        return;
       }
 
       // Create new monitored post

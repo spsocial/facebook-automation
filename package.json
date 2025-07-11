@@ -11,7 +11,7 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "start": "turbo run start",
-    "start:prod": "NODE_ENV=production turbo run start",
+    "start:prod": "cd apps/api && npm run start",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "setup": "./scripts/setup.sh",

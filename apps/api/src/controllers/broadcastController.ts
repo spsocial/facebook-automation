@@ -306,9 +306,6 @@ export const broadcastController = {
           by: ['pageId'],
           where,
           _count: true,
-          _sum: {
-            stats: true,
-          },
         }),
       ]);
 
