@@ -2,31 +2,24 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy only web app files
+# Copy package files
 COPY package*.json ./
-COPY next.config.js ./
-COPY postcss.config.js ./
-COPY tailwind.config.ts ./
-COPY tsconfig.json ./
-
-# Copy source
-COPY src ./src
-COPY public ./public
-
-# Create empty directories for packages (to satisfy imports)
-RUN mkdir -p ../../packages/shared/src ../../packages/database
-RUN echo "export const ERROR_CODES = {}; export const PLANS = {};" > ../../packages/shared/src/index.ts
-RUN echo "export default {}" > ../../packages/database/index.ts
 
 # Install dependencies
-RUN npm install --legacy-peer-deps
+RUN npm install
 
-# Build Next.js
+# Copy all app files
+COPY . .
+
+# Build the Next.js app
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
+# Expose port
 EXPOSE 3000
 
-COPY start.sh ./
-RUN chmod +x start.sh
-CMD ["./start.sh"]
+# Set PORT environment variable
+ENV PORT 3000
+
+# Start the application
+CMD ["npm", "start"]
